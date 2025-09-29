@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import LADSTextIcon from './icons/LADSTextIcon.vue';
+import LADSTextIcon from './icons/LADSLogoTextIcon.vue';
 import { Message, MessageContent, AttachmentsContent } from '../types/message';
 import ToolUse from './ToolUse.vue';
 import { marked } from 'marked';
