@@ -230,6 +230,70 @@ class CloudProviderTool(BaseTool):
             )
 
     @tool(
+        name="deploy_infrastructure",
+        description="Deploy infrastructure using cloud provider APIs",
+        parameters={
+            "iac_config": {
+                "type": "object",
+                "description": "Infrastructure as Code configuration"
+            },
+            "auto_approve": {
+                "type": "boolean",
+                "description": "Auto-approve deployment (use with caution)",
+                "default": False
+            }
+        },
+        required=["iac_config"]
+    )
+    async def deploy_infrastructure(
+        self,
+        iac_config: Dict[str, Any],
+        auto_approve: bool = False
+    ) -> ToolResult:
+        """Deploy infrastructure using IaC configuration"""
+        try:
+            tool = iac_config.get("tool", "terraform")
+            config_path = iac_config.get("config_path", "/home/ubuntu/iac")
+            
+            if tool == "terraform":
+                from app.domain.services.tools.terraform import TerraformTool
+                terraform_tool = TerraformTool(self.sandbox)
+                
+                init_result = await terraform_tool.terraform_init(config_path)
+                if not init_result.success:
+                    return init_result
+                
+                plan_result = await terraform_tool.terraform_plan(config_path)
+                if not plan_result.success:
+                    return plan_result
+                
+                apply_result = await terraform_tool.terraform_apply(
+                    config_path, auto_approve=auto_approve
+                )
+                
+                return ToolResult(
+                    success=apply_result.success,
+                    message=f"Infrastructure deployment {'completed' if apply_result.success else 'failed'}",
+                    data={
+                        "deployment_status": "deployed" if apply_result.success else "failed",
+                        "terraform_state": apply_result.data
+                    }
+                )
+            else:
+                return ToolResult(
+                    success=False,
+                    message=f"Deployment tool {tool} not supported",
+                    data={"error": f"Tool {tool} not supported"}
+                )
+                
+        except Exception as e:
+            return ToolResult(
+                success=False,
+                message=f"Error deploying infrastructure: {str(e)}",
+                data={"error": str(e)}
+            )
+
+    @tool(
         name="azure_configure_credentials",
         description="Configure Azure credentials for deployment operations",
         parameters={

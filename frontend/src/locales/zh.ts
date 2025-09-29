@@ -23,11 +23,11 @@ export default {
   'Thursday': '周四',
   'Friday': '周五',
   'Saturday': '周六',
-  'Manus Computer': 'Manus 的电脑',
-  'Manus is using': 'Manus 正在使用',
+  'LADS Computer': 'LADS 的电脑',
+  'LADS is using': 'LADS 正在使用',
   'Jump to live': '跳到实时',
   'Failed to load file content': '加载文件内容失败',
-  'Give Manus a task to work on...': '给 Manus 一个任务...',
+  'Give LADS a task to work on...': '给 LADS 一个任务...',
   // Shell tools
   'Executing command': '正在执行命令',
   'Viewing command output': '正在查看命令输出',
@@ -99,8 +99,8 @@ export default {
   'Audio': '音频',
   'Archive': '压缩包',
   // Login/Register Page
-  'Login to Manus': '登录 Manus',
-  'Register to Manus': '注册 Manus',
+  'Login to LADS': '登录 LADS',
+  'Register to LADS': '注册 LADS',
   'Full Name': '姓名',
   'Email': '邮箱',
   'Password': '密码',
@@ -114,7 +114,7 @@ export default {
   'Already have an account?': '已有账户？',
   'Don\'t have an account?': '没有账户？',
   'Login successful! Welcome back': '登录成功！欢迎回来',
-  'Registration successful! Welcome to Manus': '注册成功！欢迎使用 Manus',
+  'Registration successful! Welcome to LADS': '注册成功！欢迎使用 LADS',
   'Authentication failed, please try again': '认证失败，请重试',
   'Passwords do not match': '两次密码输入不一致',
   // Validation error messages
@@ -189,4 +189,4 @@ export default {
   // Reset Password Form
   'Sending Code...': '发送验证码中...',
   'Send Verification Code': '发送验证码',
-} 
+}  

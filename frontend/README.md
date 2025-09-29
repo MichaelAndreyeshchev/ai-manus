@@ -1,4 +1,4 @@
-# AI Manus Frontend
+# AI LADS Frontend
 
 English | [中文](README_zh.md)
 
@@ -61,4 +61,4 @@ src/
 ├── App.vue          # Root component
 ├── main.ts          # Entry file
 └── index.css        # Global styles
-``` 
+```  

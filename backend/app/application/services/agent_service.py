@@ -218,16 +218,3 @@ class AgentService:
             logger.error(f"Session {session_id} not found for user {user_id}")
             raise RuntimeError("Session not found")
         return session.files
-
-    async def create_cloud_pipeline_session(self, user_id: str, agent_id: str, user_requirements: Optional[dict] = None) -> Session:
-        """Create a new cloud pipeline session"""
-        from app.domain.models.pipeline_session import PipelineSession
-        
-        session = PipelineSession(user_id=user_id, agent_id=agent_id)
-        if user_requirements:
-            session.user_requirements = user_requirements
-        session.start_planning_stage()
-        
-        await self._session_repository.save(session)
-        logger.info(f"Cloud pipeline session {session.id} created successfully")
-        return session

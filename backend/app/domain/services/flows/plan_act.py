@@ -70,6 +70,22 @@ class PlanActFlow(BaseFlow):
             mcp_tool
         ]
         
+        from app.domain.services.tools.cloud_provider import CloudProviderTool
+        from app.domain.services.tools.terraform import TerraformTool
+        from app.domain.services.tools.kubernetes import KubernetesTool
+        from app.domain.services.tools.monitoring import MonitoringTool
+        from app.domain.services.tools.architecture_planning import ArchitecturePlanningTool
+        from app.domain.services.tools.iac_coding import IaCCodingTool
+        
+        tools.extend([
+            CloudProviderTool(sandbox),
+            TerraformTool(sandbox),
+            KubernetesTool(sandbox),
+            MonitoringTool(sandbox),
+            ArchitecturePlanningTool(sandbox),
+            IaCCodingTool(sandbox)
+        ])
+        
         # Only add search tool when search_engine is not None
         if search_engine:
             tools.append(SearchTool(search_engine))

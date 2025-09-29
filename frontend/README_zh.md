@@ -1,4 +1,4 @@
-# AI Manus 前端
+# AI LADS 前端
 
 [English](README.md) | 中文
 
