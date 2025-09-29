@@ -69,18 +69,33 @@ class AgentTaskRunner(TaskRunner):
         self._file_storage = file_storage
         self._mcp_repository = mcp_repository
         self._mcp_tool = MCPTool()
-        self._flow = PlanActFlow(
-            self._agent_id,
-            self._repository,
-            self._session_id,
-            self._session_repository,
-            self._llm,
-            self._sandbox,
-            self._browser,
-            self._json_parser,
-            self._mcp_tool,
-            self._search_engine,
-        )
+        if self._is_cloud_pipeline_request():
+            from app.domain.services.flows.cloud_pipeline import CloudPipelineFlow
+            self._flow = CloudPipelineFlow(
+                self._agent_id,
+                self._repository,
+                self._session_id,
+                self._session_repository,
+                self._llm,
+                self._sandbox,
+                self._browser,
+                self._json_parser,
+                self._mcp_tool,
+                self._search_engine,
+            )
+        else:
+            self._flow = PlanActFlow(
+                self._agent_id,
+                self._repository,
+                self._session_id,
+                self._session_repository,
+                self._llm,
+                self._sandbox,
+                self._browser,
+                self._json_parser,
+                self._mcp_tool,
+                self._search_engine,
+            )
 
     async def _put_and_add_event(self, task: Task, event: AgentEvent) -> None:
         event_id = await task.output_stream.put(event.model_dump_json())
@@ -127,6 +142,10 @@ class AgentTaskRunner(TaskRunner):
                 return file_info
         except Exception as e:
             logger.exception(f"Agent {self._agent_id} failed to sync file: {e}")
+
+    def _is_cloud_pipeline_request(self) -> bool:
+        """Check if this is a cloud pipeline request based on agent configuration"""
+        return False  # Default to standard flow for now
 
     async def _sync_message_attachments_to_storage(self, event: MessageEvent) -> None:
         """Sync message attachments and update event attachments"""

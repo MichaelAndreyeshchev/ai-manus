@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Optional, List
+from typing import AsyncGenerator, Optional, List, Dict
 import logging
 from datetime import datetime
 from app.domain.models.session import Session
@@ -92,7 +92,7 @@ class AgentService:
         event_id: Optional[str] = None,
         attachments: Optional[List[str]] = None
     ) -> AsyncGenerator[AgentEvent, None]:
-        logger.info(f"Starting chat with session {session_id}: {message[:50]}...")
+        logger.info(f"Starting chat with session {session_id}: {message[:50] if message else 'None'}...")
         # Directly use the domain service's chat method, which will check if the session exists
         async for event in self._agent_domain_service.chat(session_id, user_id, message, timestamp, event_id, attachments):
             logger.debug(f"Received event: {event}")
@@ -218,3 +218,16 @@ class AgentService:
             logger.error(f"Session {session_id} not found for user {user_id}")
             raise RuntimeError("Session not found")
         return session.files
+
+    async def create_cloud_pipeline_session(self, user_id: str, agent_id: str, user_requirements: Optional[dict] = None) -> Session:
+        """Create a new cloud pipeline session"""
+        from app.domain.models.pipeline_session import PipelineSession
+        
+        session = PipelineSession(user_id=user_id, agent_id=agent_id)
+        if user_requirements:
+            session.user_requirements = user_requirements
+        session.start_planning_stage()
+        
+        await self._session_repository.save(session)
+        logger.info(f"Cloud pipeline session {session.id} created successfully")
+        return session
