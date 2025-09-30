@@ -24,7 +24,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: ["./dev.sh"]  # Start in reload mode
+    command: ["sh", "-c", "tr -d '\r' < ./dev.sh > /tmp/dev.sh && sh /tmp/dev.sh"]  # Strip CRLF and run
     volumes:
       - ./backend:/app  # Mount source code directory
       #- ./mcp.json:/etc/mcp.json # Mount MCP servers directory
@@ -77,6 +77,7 @@ services:
     build:
       context: ./mockserver
       dockerfile: Dockerfile
+    command: ["sh", "./dev.sh"]  # Ensure script runs even on Windows-mounted volumes
     volumes:
       - ./mockserver:/app  # Mount source code directory
       - /app/__pycache__  # Avoid overwriting cache files
