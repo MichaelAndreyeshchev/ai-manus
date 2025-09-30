@@ -78,7 +78,11 @@ export const TOOL_NAME_MAP: {[key: string]: string} = {
   "browser": "Browser",
   "info": "Information",
   "message": "Message",
-  "mcp": "MCP Tool"
+  "mcp": "MCP Tool",
+  "terraform": "Terraform",
+  "cloud_provider": "Cloud",
+  "kubernetes": "Kubernetes",
+  "monitoring": "Monitoring"
 };
 
 import SearchIcon from '../components/icons/SearchIcon.vue';
@@ -95,7 +99,11 @@ export const TOOL_ICON_MAP: {[key: string]: any} = {
   "browser": BrowserIcon,
   "search": SearchIcon,
   "message": "",
-  "mcp": SearchIcon  // 暂时使用搜索图标，可以后续创建专门的MCP图标
+  "mcp": SearchIcon,  // 暂时使用搜索图标，可以后续创建专门的MCP图标
+  "terraform": ShellIcon,
+  "cloud_provider": ShellIcon,
+  "kubernetes": ShellIcon,
+  "monitoring": ShellIcon
 };
 
 import ShellToolView from '@/components/toolViews/ShellToolView.vue';
@@ -112,5 +120,9 @@ export const TOOL_COMPONENT_MAP: {[key: string]: any} = {
   "file": FileToolView,
   "search": SearchToolView,
   "browser": BrowserToolView,
-  "mcp": McpToolView
+  "mcp": McpToolView,
+  "terraform": ShellToolView,
+  "cloud_provider": ShellToolView,
+  "kubernetes": ShellToolView,
+  "monitoring": ShellToolView
 };

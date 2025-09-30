@@ -68,6 +68,11 @@ class Settings(BaseSettings):
     # Logging configuration
     log_level: str = "INFO"
     
+    # Cloud pipeline feature flags
+    cloud_pipeline_enabled: bool = False
+    cloud_default_provider: str = "aws"  # aws | azure | gcp
+    cloud_tools_allow_deploy: bool = False
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

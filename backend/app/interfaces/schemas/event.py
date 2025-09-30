@@ -145,6 +145,9 @@ class TitleSSEEvent(BaseSSEEvent):
 
 class PlanEventData(BaseEventData):
     steps: List[StepEventData]
+    title: Optional[str] = None
+    goal: Optional[str] = None
+    mermaid: Optional[str] = None
 
 class PlanSSEEvent(BaseSSEEvent):
     event: Literal["plan"] = "plan"
@@ -160,7 +163,10 @@ class PlanSSEEvent(BaseSSEEvent):
                     status=step.status,
                     id=step.id, 
                     description=step.description
-                ) for step in event.plan.steps]
+                ) for step in event.plan.steps],
+                title=getattr(event.plan, 'title', None),
+                goal=getattr(event.plan, 'goal', None),
+                mermaid=getattr(event.plan, 'mermaid', None)
             )
         )
 
@@ -169,7 +175,7 @@ class CommonSSEEvent(BaseSSEEvent):
     data: CommonEventData
 
 AgentSSEEvent = Union[
-    CommonEventData,
+    CommonSSEEvent,
     PlanSSEEvent,
     MessageSSEEvent,
     TitleSSEEvent,
@@ -242,8 +248,8 @@ class EventMapper:
             # Prioritize from_event class method
             sse_event = event_mapping.sse_event_class.from_event(event)
             return sse_event
-        # If no matching type found, return base event
-        return CommonEventData.from_event(event)
+        # If no matching type found, return generic SSE with data
+        return CommonSSEEvent(event=event.type, data=CommonEventData.from_event(event))
     
     @staticmethod
     def events_to_sse_events(events: List[AgentEvent]) -> List[AgentSSEEvent]:

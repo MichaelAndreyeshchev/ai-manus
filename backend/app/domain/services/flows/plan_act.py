@@ -57,6 +57,7 @@ class PlanActFlow(BaseFlow):
     ):
         self._agent_id = agent_id
         self._repository = agent_repository
+        self._agent_id = agent_id
         self._session_id = session_id
         self._session_repository = session_repository
         self.status = AgentStatus.IDLE

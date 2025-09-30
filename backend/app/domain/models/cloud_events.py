@@ -3,7 +3,9 @@ from typing import Dict, Any, List, Optional, Literal
 from datetime import datetime
 from enum import Enum
 import uuid
-from app.domain.models.event import BaseEvent
+from pydantic import BaseModel, Field
+from datetime import datetime, timezone
+import uuid
 from app.domain.models.cloud import (
     ArchitecturePlan,
     IaCConfiguration,
@@ -24,14 +26,19 @@ class CloudPipelineStatus(str, Enum):
     FAILED = "failed"
 
 
-class ArchitecturePlanEvent(BaseEvent):
+class BaseCloudEvent(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ArchitecturePlanEvent(BaseCloudEvent):
     """Architecture plan event"""
     type: Literal["architecture_plan"] = "architecture_plan"
     plan: ArchitecturePlan
     status: Literal["created", "updated", "approved", "rejected"] = "created"
 
 
-class IaCGenerationEvent(BaseEvent):
+class IaCGenerationEvent(BaseCloudEvent):
     """Infrastructure as Code generation event"""
     type: Literal["iac_generation"] = "iac_generation"
     config: IaCConfiguration
@@ -39,7 +46,7 @@ class IaCGenerationEvent(BaseEvent):
     validation_results: Optional[Dict[str, Any]] = None
 
 
-class DeploymentEvent(BaseEvent):
+class DeploymentEvent(BaseCloudEvent):
     """Deployment event"""
     type: Literal["deployment"] = "deployment"
     deployment: DeploymentRecord
@@ -47,7 +54,7 @@ class DeploymentEvent(BaseEvent):
     progress_percentage: Optional[int] = None
 
 
-class MonitoringEvent(BaseEvent):
+class MonitoringEvent(BaseCloudEvent):
     """Monitoring event"""
     type: Literal["monitoring"] = "monitoring"
     config: Optional[MonitoringConfig] = None
@@ -55,7 +62,7 @@ class MonitoringEvent(BaseEvent):
     status: Literal["configured", "alert", "resolved", "healthy"] = "configured"
 
 
-class CloudPipelineEvent(BaseEvent):
+class CloudPipelineEvent(BaseCloudEvent):
     """Cloud pipeline event"""
     type: Literal["cloud_pipeline"] = "cloud_pipeline"
     pipeline_status: CloudPipelineStatus
@@ -64,7 +71,7 @@ class CloudPipelineEvent(BaseEvent):
     metadata: Dict[str, Any] = {}
 
 
-class CostEstimateEvent(BaseEvent):
+class CostEstimateEvent(BaseCloudEvent):
     """Cost estimate event"""
     type: Literal["cost_estimate"] = "cost_estimate"
     monthly_cost: float

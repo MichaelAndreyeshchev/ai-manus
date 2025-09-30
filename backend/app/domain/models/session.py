@@ -32,6 +32,7 @@ class Session(BaseModel):
     events: List[AgentEvent] = []
     files: List[FileInfo] = []
     status: SessionStatus = SessionStatus.PENDING
+    pipeline: Optional[dict] = None
 
     def get_last_plan(self) -> Optional[Plan]:
         """Get the last plan from the events"""

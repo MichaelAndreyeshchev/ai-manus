@@ -1,7 +1,7 @@
 from typing import Dict, Optional, List, Type, TypeVar, Generic, get_args, Self
 from datetime import datetime, timezone, UTC
 from beanie import Document
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 from app.domain.models.agent import Agent
 from app.domain.models.memory import Memory
 from app.domain.models.event import AgentEvent
@@ -29,10 +29,36 @@ class BaseDocument(Document, Generic[T]):
             setattr(self, field, value)
     
     def to_domain(self) -> T:
-        """Convert MongoDB document to domain model"""
-        # Convert to dict and map agent_id to id field
+        """Convert MongoDB document to domain model with resilient event parsing"""
         data = self.model_dump(exclude={'id'})
         data['id'] = data.pop(self._ID_FIELD)
+        # Normalize events if present
+        if 'events' in data and isinstance(data['events'], list):
+            normalized = []
+            for ev in data['events']:
+                try:
+                    normalized.append(TypeAdapter(AgentEvent).validate_python(ev))
+                except Exception:
+                    if isinstance(ev, dict) and ev.get('type') == 'tool':
+                        ev = dict(ev)
+                        ev.pop('tool_content', None)
+                        try:
+                            normalized.append(TypeAdapter(AgentEvent).validate_python(ev))
+                            continue
+                        except Exception:
+                            pass
+                    # Fallback: coerce to message
+                    try:
+                        fallback = {
+                            'type': 'message',
+                            'role': 'assistant',
+                            'message': ev if isinstance(ev, str) else str(ev),
+                        }
+                        normalized.append(TypeAdapter(AgentEvent).validate_python(fallback))
+                    except Exception:
+                        # drop bad event
+                        continue
+            data['events'] = normalized
         return self._DOMAIN_MODEL_CLASS.model_validate(data)
     
     @classmethod
@@ -96,6 +122,7 @@ class SessionDocument(BaseDocument[Session], id_field="session_id", domain_model
     events: List[AgentEvent]
     status: SessionStatus
     files: List[FileInfo] = []
+    pipeline: Optional[dict] = None
     class Settings:
         name = "sessions"
         indexes = [

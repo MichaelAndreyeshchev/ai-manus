@@ -59,6 +59,28 @@ class ExecutionAgent(BaseAgent):
             tools=tools
         )
     
+class IaCExecutionAgent(ExecutionAgent):
+    """
+    Specialized execution agent for IaC generation.
+    """
+
+    name: str = "iac_coder"
+
+
+class DeploymentAgent(ExecutionAgent):
+    """
+    Specialized execution agent for deployment operations.
+    """
+
+    name: str = "deployer"
+
+
+class MonitoringAgent(ExecutionAgent):
+    """
+    Specialized execution agent for monitoring operations.
+    """
+
+    name: str = "monitor"
     async def execute_step(self, plan: Plan, step: Step, message: Message) -> AsyncGenerator[BaseEvent, None]:
         message = EXECUTION_PROMPT.format(
             step=step.description, 

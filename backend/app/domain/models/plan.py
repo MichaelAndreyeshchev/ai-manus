@@ -31,6 +31,7 @@ class Plan(BaseModel):
     status: ExecutionStatus = ExecutionStatus.PENDING
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
+    mermaid: Optional[str] = None
 
     def is_done(self) -> bool:
         return self.status == ExecutionStatus.COMPLETED or self.status == ExecutionStatus.FAILED

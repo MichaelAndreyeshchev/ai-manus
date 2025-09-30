@@ -61,11 +61,13 @@ class ArchitecturePlanningTool(BaseTool):
                 resources=resources,
                 requirements=requirements
             )
+            # Generate a simple mermaid diagram string to visualize architecture
+            mermaid = self._generate_mermaid_diagram(provider, architecture_type, resources)
             
             return ToolResult(
                 success=True,
                 message=f"Architecture plan created successfully for {estimated_users:,} users with estimated cost ${estimated_cost:.2f}/month",
-                data={"plan": plan.model_dump()}
+                data={"plan": plan.model_dump(), "mermaid": mermaid}
             )
             
         except Exception as e:
@@ -139,3 +141,21 @@ class ArchitecturePlanningTool(BaseTool):
     def _estimate_monthly_cost(self, resources: List[CloudResource], provider: str) -> float:
         """Calculate total estimated monthly cost"""
         return sum(resource.cost_estimate or 0 for resource in resources)
+
+    def _generate_mermaid_diagram(self, provider: str, arch_type: str, resources: List[CloudResource]) -> str:
+        """Generate a simple mermaid flowchart for the architecture"""
+        lines = ["flowchart TD"]
+        # Nodes
+        for res in resources:
+            node = res.name.replace('-', '_')
+            label = f"{res.name}\\n({res.type})"
+            lines.append(f"  {node}[{label}]")
+        # Basic edges for common resources
+        names = [r.name.replace('-', '_') for r in resources]
+        if 'load-balancer' in [r.name for r in resources] and 'web-servers' in [r.name for r in resources]:
+            lines.append("  load_balancer-->web_servers")
+        if 'web-servers' in [r.name for r in resources] and 'api-servers' in [r.name for r in resources]:
+            lines.append("  web_servers-->api_servers")
+        if 'api-servers' in [r.name for r in resources] and 'database' in [r.name for r in resources]:
+            lines.append("  api_servers-->database")
+        return "\n".join(lines)

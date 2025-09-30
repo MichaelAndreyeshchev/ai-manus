@@ -21,6 +21,7 @@
     "framer-motion": "^10.12.16",
     "lucide-vue-next": "^0.511.0",
     "marked": "^15.0.8",
+    "mermaid": "^10.9.4",
     "mitt": "^3.0.1",
     "monaco-editor": "^0.52.2",
     "reka-ui": "^2.4.1",

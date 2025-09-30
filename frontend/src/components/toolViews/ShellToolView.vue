@@ -42,9 +42,10 @@ const refreshTimer = ref<number | null>(null);
 
 // Get shellSessionId from toolContent
 const shellSessionId = computed(() => {
-  if (props.toolContent && props.toolContent.args.id) {
-    return props.toolContent.args.id;
-  }
+  if (props.toolContent?.args?.id) return props.toolContent.args.id;
+  // Fallbacks for cloud tools that proxy sandbox execs
+  if (props.toolContent?.content?.session_id) return props.toolContent.content.session_id;
+  if (props.toolContent?.content?.id) return props.toolContent.content.id;
   return '';
 });
 

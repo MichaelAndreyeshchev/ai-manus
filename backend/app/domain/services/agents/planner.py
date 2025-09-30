@@ -56,6 +56,14 @@ class PlannerAgent(BaseAgent):
         )
 
 
+class ArchitecturePlannerAgent(PlannerAgent):
+    """
+    Specialized planner for cloud architecture planning.
+    """
+
+    name: str = "architecture_planner"
+
+
     async def create_plan(self, message: Message) -> AsyncGenerator[BaseEvent, None]:
         message = CREATE_PLAN_PROMPT.format(
             message=message.message,
@@ -66,6 +74,7 @@ class PlannerAgent(BaseAgent):
                 logger.info(event.message)
                 parsed_response = await self.json_parser.parse(event.message)
                 plan = Plan.model_validate(parsed_response)
+                # If any mermaid diagram returned by planning tool in tool events earlier, attach it when present
                 yield PlanEvent(status=PlanStatus.CREATED, plan=plan)
             else:
                 yield event

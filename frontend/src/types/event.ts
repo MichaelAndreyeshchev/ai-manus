@@ -1,8 +1,9 @@
 import type { FileInfo } from '../api/file';
 
 export type AgentSSEEvent = {
-  event: 'tool' | 'step' | 'message' | 'error' | 'done' | 'title' | 'wait' | 'plan' | 'attachments';
-  data: ToolEventData | StepEventData | MessageEventData | ErrorEventData | DoneEventData | TitleEventData | WaitEventData | PlanEventData;
+  event: 'tool' | 'step' | 'message' | 'error' | 'done' | 'title' | 'wait' | 'plan' | 'attachments'
+       | 'cloud_pipeline' | 'architecture_plan' | 'iac_generation' | 'deployment' | 'monitoring' | 'cost_estimate';
+  data: ToolEventData | StepEventData | MessageEventData | ErrorEventData | DoneEventData | TitleEventData | WaitEventData | PlanEventData | any;
 }
 
 export interface BaseEventData {
@@ -47,4 +48,7 @@ export interface TitleEventData extends BaseEventData {
 
 export interface PlanEventData extends BaseEventData {
   steps: StepEventData[];
+  title?: string;
+  goal?: string;
+  mermaid?: string;
 }

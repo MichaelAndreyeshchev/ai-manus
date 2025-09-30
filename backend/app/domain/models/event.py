@@ -8,6 +8,14 @@ from app.domain.models.plan import Plan, Step
 from app.domain.models.file import FileInfo
 import json
 from app.domain.models.search import SearchResultItem
+from app.domain.models.cloud_events import (
+    CloudPipelineEvent,
+    ArchitecturePlanEvent,
+    IaCGenerationEvent,
+    DeploymentEvent,
+    MonitoringEvent,
+    CostEstimateEvent,
+)
 
 
 class PlanStatus(str, Enum):
@@ -81,7 +89,7 @@ class ToolEvent(BaseEvent):
     type: Literal["tool"] = "tool"
     tool_call_id: str
     tool_name: str
-    tool_content: Optional[ToolContent] = None
+    tool_content: Optional[Any] = None
     function_name: str
     function_args: Dict[str, Any]
     status: ToolStatus
@@ -122,4 +130,10 @@ AgentEvent = Union[
     DoneEvent,
     TitleEvent,
     WaitEvent,
+    CloudPipelineEvent,
+    ArchitecturePlanEvent,
+    IaCGenerationEvent,
+    DeploymentEvent,
+    MonitoringEvent,
+    CostEstimateEvent,
 ]

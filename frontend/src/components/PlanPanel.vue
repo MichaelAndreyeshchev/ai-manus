@@ -18,7 +18,17 @@
             <span class="text-[var(--text-primary)] font-bold">{{ $t('Task Progress') }}</span>
             <div class="flex items-center gap-3">
               <span class="text-xs text-[var(--text-tertiary)]">{{ planProgress }}</span>
+              <div class="flex gap-1">
+                <span v-for="stage in pipelineStages" :key="stage.name"
+                      class="px-2 py-[2px] rounded-full text-[11px]"
+                      :class="stage.active ? 'bg-green-500/20 text-green-700' : 'bg-gray-300/40 text-gray-600'">
+                  {{ stage.name }}
+                </span>
+              </div>
             </div>
+          </div>
+          <div v-if="plan.mermaid" class="px-4 py-2">
+            <Mermaid :code="plan.mermaid" />
           </div>
           <div class="max-h-[min(calc(100vh-360px),400px)] overflow-y-auto">
             <div v-for="step in plan.steps" :key="step.id"
@@ -68,6 +78,7 @@ import { useI18n } from 'vue-i18n';
 import { ChevronUp, ChevronDown, Clock } from 'lucide-vue-next';
 import StepSuccessIcon from './icons/StepSuccessIcon.vue';
 import type { PlanEventData } from '../types/event';
+import Mermaid from './toolViews/Mermaid.vue';
 
 interface Props {
   plan: PlanEventData;
@@ -99,6 +110,19 @@ const currentStep = computed((): string => {
     }
   }
   return t('Task Completed');
+});
+
+// naive pipeline stage badges (activate based on completed steps keywords)
+const pipelineStages = computed(() => {
+  const steps = props.plan?.steps ?? [];
+  const text = steps.map(s => s.description.toLowerCase()).join(' ');
+  const stages = [
+    { name: 'Planning', active: /plan|architecture/.test(text) },
+    { name: 'IaC', active: /iac|terraform|cloudformation|pulumi/.test(text) },
+    { name: 'Deploy', active: /deploy|apply|kubectl/.test(text) },
+    { name: 'Monitor', active: /monitor|prometheus|grafana|health/.test(text) },
+  ];
+  return stages;
 });
 </script>
 

@@ -21,6 +21,8 @@ from app.domain.models.event import (
     ToolStatus
 )
 from app.domain.services.flows.plan_act import PlanActFlow
+from app.domain.services.flows.cloud_pipeline import CloudPipelineFlow
+from app.core.config import get_settings
 from app.domain.external.sandbox import Sandbox
 from app.domain.external.browser import Browser
 from app.domain.external.search import SearchEngine
@@ -69,7 +71,10 @@ class AgentTaskRunner(TaskRunner):
         self._file_storage = file_storage
         self._mcp_repository = mcp_repository
         self._mcp_tool = MCPTool()
-        self._flow = PlanActFlow(
+        settings = get_settings()
+        self._cloud_pipeline_enabled = settings.cloud_pipeline_enabled
+        # Always prepare both flows; pick at runtime based on intent
+        self._plan_flow = PlanActFlow(
             self._agent_id,
             self._repository,
             self._session_id,
@@ -81,6 +86,20 @@ class AgentTaskRunner(TaskRunner):
             self._mcp_tool,
             self._search_engine,
         )
+        self._cloud_flow = None
+        if self._cloud_pipeline_enabled:
+            self._cloud_flow = CloudPipelineFlow(
+                self._agent_id,
+                self._repository,
+                self._session_id,
+                self._session_repository,
+                self._llm,
+                self._sandbox,
+                self._browser,
+                self._json_parser,
+                self._mcp_tool,
+                self._search_engine,
+            )
 
     async def _put_and_add_event(self, task: Task, event: AgentEvent) -> None:
         event_id = await task.output_stream.put(event.model_dump_json())
@@ -205,7 +224,12 @@ class AgentTaskRunner(TaskRunner):
                         logger.debug(f"MCP tool_content.result: {event.tool_content.result}")
                         logger.debug(f"MCP tool_content dict: {event.tool_content.model_dump()}")
                 else:
-                    logger.warning(f"Agent {self._agent_id} received unknown tool event: {event.tool_name}")
+                    # Cloud/IaC/Monitoring tool content passthrough
+                    if event.tool_name in ("cloud_provider", "terraform", "kubernetes", "monitoring", "architecture_planning", "iac_coding"):
+                        if event.function_result and hasattr(event.function_result, 'data'):
+                            event.tool_content = event.function_result.data
+                    else:
+                        logger.warning(f"Agent {self._agent_id} received unknown tool event: {event.tool_name}")
         except Exception as e:
             logger.exception(f"Agent {self._agent_id} failed to generate tool content: {e}")
 
@@ -256,10 +280,32 @@ class AgentTaskRunner(TaskRunner):
             yield ErrorEvent(error="No message")
             return
 
-        async for event in self._flow.run(message):
+        # Choose flow by intent: prefer pipeline only when message clearly asks for cloud/IaC/deploy/monitoring
+        flow = self._plan_flow
+        text = (message.message or "").lower()
+        if self._cloud_pipeline_enabled and self._cloud_flow:
+            cloud_keywords = (
+                "architecture plan", "architecture", "iac", "terraform",
+                "kubernetes", "prometheus", "grafana", "aws", "azure", "gcp"
+            )
+            repo_keywords = (
+                "task progress", "clone", "git ", "github.com", "repository", "repo ",
+                "install dependencies", "requirements.txt", "package.json", "npm install", "pnpm install",
+                "yarn install", "pip install", "poetry install", "run the application", "run app",
+                "start server", "tests", "pytest", "unit test", "dev environment", "development environment"
+            )
+            if any(k in text for k in cloud_keywords) and not any(k in text for k in repo_keywords):
+                flow = self._cloud_flow
+
+        async for event in flow.run(message):
             if isinstance(event, ToolEvent):
                 # TODO: move to tool function
-                await self._handle_tool_event(event)
+                try:
+                    await self._handle_tool_event(event)
+                except Exception:
+                    # Fallback: if tool_content isn't one of the typed contents, store raw data to avoid serializer warnings
+                    if event.function_result and hasattr(event.function_result, 'data') and event.tool_content is None:
+                        event.tool_content = event.function_result.data
             elif isinstance(event, MessageEvent):
                 await self._sync_message_attachments_to_storage(event)
             yield event
