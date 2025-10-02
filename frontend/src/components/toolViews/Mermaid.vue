@@ -1,14 +1,18 @@
 <template>
   <div class="mermaid-container">
-    <pre ref="el" class="mermaid">{{ code }}</pre>
+    <div ref="viewport" class="mermaid-viewport">
+      <pre ref="el" class="mermaid">{{ code }}</pre>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUpdated, ref, watch, nextTick } from 'vue';
+import { onMounted, onUpdated, ref, watch, nextTick, onBeforeUnmount } from 'vue';
 
 const props = defineProps<{ code: string }>();
 const el = ref<HTMLElement | null>(null);
+const viewport = ref<HTMLElement | null>(null);
+let panzoomInstance: any = null;
 
 async function render() {
   await nextTick();
@@ -18,6 +22,11 @@ async function render() {
   mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme: 'default' });
   try {
     await mermaid.run({ querySelector: '.mermaid' });
+    // Mount panzoom after render
+    const panzoom = (await import('panzoom')).default;
+    if (viewport.value && !panzoomInstance) {
+      panzoomInstance = panzoom(viewport.value, { smoothScroll: false, bounds: true, maxZoom: 5, minZoom: 0.2 });
+    }
   } catch (e) {
     // ignore render errors; show raw code
   }
@@ -26,11 +35,19 @@ async function render() {
 onMounted(render);
 onUpdated(render);
 watch(() => props.code, render);
+onBeforeUnmount(() => {
+  if (panzoomInstance && panzoomInstance.dispose) panzoomInstance.dispose();
+  panzoomInstance = null;
+});
 </script>
 
 <style scoped>
 .mermaid-container {
   overflow-x: auto;
+}
+.mermaid-viewport {
+  width: 100%;
+  height: 100%;
 }
 .mermaid {
   white-space: pre-wrap;

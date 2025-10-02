@@ -32,6 +32,11 @@ class Plan(BaseModel):
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
     mermaid: Optional[str] = None
+    # Unified cloud state (optional)
+    architecture_plan: Optional[Dict[str, Any]] = None
+    iac_config: Optional[Dict[str, Any]] = None
+    deployment_record: Optional[Dict[str, Any]] = None
+    monitoring_config: Optional[Dict[str, Any]] = None
 
     def is_done(self) -> bool:
         return self.status == ExecutionStatus.COMPLETED or self.status == ExecutionStatus.FAILED

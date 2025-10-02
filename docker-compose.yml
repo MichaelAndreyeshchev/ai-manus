@@ -1,6 +1,7 @@
+name: lads
 services:
   frontend:
-    image: ${IMAGE_REGISTRY:-simpleyyt}/manus-frontend:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-lads}/lads-frontend:${IMAGE_TAG:-latest}
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -19,7 +20,7 @@ services:
       - BACKEND_URL=http://backend:8000
 
   backend:
-    image: ${IMAGE_REGISTRY:-simpleyyt}/manus-backend:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-lads}/lads-backend:${IMAGE_TAG:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -41,7 +42,7 @@ services:
       - .env
 
   sandbox:
-    image: ${IMAGE_REGISTRY:-simpleyyt}/manus-sandbox:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-lads}/lads-sandbox:${IMAGE_TAG:-latest}
     build:
       context: ./sandbox
       dockerfile: Dockerfile

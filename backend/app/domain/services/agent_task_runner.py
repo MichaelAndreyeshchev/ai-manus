@@ -224,10 +224,21 @@ class AgentTaskRunner(TaskRunner):
                         logger.debug(f"MCP tool_content.result: {event.tool_content.result}")
                         logger.debug(f"MCP tool_content dict: {event.tool_content.model_dump()}")
                 else:
-                    # Cloud/IaC/Monitoring tool content passthrough
+                    # Cloud/IaC/Monitoring tool content passthrough and file syncs
                     if event.tool_name in ("cloud_provider", "terraform", "kubernetes", "monitoring", "architecture_planning", "iac_coding"):
                         if event.function_result and hasattr(event.function_result, 'data'):
                             event.tool_content = event.function_result.data
+                            # Sync markdown or output files referenced by tools
+                            try:
+                                data = event.function_result.data or {}
+                                for key in ("markdown_file", "config_file", "compose_file", "dashboard_path", "compose_path"):
+                                    if data.get(key):
+                                        await self._sync_file_to_storage(data[key])
+                                if isinstance(data.get("files"), list):
+                                    for path in data["files"]:
+                                        await self._sync_file_to_storage(path)
+                            except Exception:
+                                pass
                     else:
                         logger.warning(f"Agent {self._agent_id} received unknown tool event: {event.tool_name}")
         except Exception as e:
@@ -308,6 +319,15 @@ class AgentTaskRunner(TaskRunner):
                         event.tool_content = event.function_result.data
             elif isinstance(event, MessageEvent):
                 await self._sync_message_attachments_to_storage(event)
+                # Also persist files created/updated in sandbox referenced by messages
+                # Basic heuristic: if message looks like it references a path under /home/ubuntu, attempt sync
+                try:
+                    if event.message:
+                        import re
+                        for path in re.findall(r"(/home/ubuntu/[\w\-/\.]+)", event.message):
+                            await self._sync_file_to_storage(path)
+                except Exception:
+                    pass
             yield event
 
         logger.info(f"Agent {self._agent_id} completed processing one message")

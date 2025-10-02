@@ -24,6 +24,7 @@
     "mermaid": "^10.9.4",
     "mitt": "^3.0.1",
     "monaco-editor": "^0.52.2",
+    "panzoom": "^9.4.3",
     "reka-ui": "^2.4.1",
     "tailwind-merge": "^1.14.0",
     "tw-animate-css": "^1.3.7",

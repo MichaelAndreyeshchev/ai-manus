@@ -63,11 +63,55 @@ class ArchitecturePlanningTool(BaseTool):
             )
             # Generate a simple mermaid diagram string to visualize architecture
             mermaid = self._generate_mermaid_diagram(provider, architecture_type, resources)
-            
+
+            # Write markdown file with plan details and embedded mermaid
+            md_dir = "/home/ubuntu/architecture"
+            mkdir_result = await self.sandbox.exec_command("mkdir", "/home/ubuntu", f"mkdir -p {md_dir}")
+            if not mkdir_result.success:
+                return ToolResult(
+                    success=False,
+                    message=f"Failed to create architecture directory: {mkdir_result.message}",
+                    data={"error": mkdir_result.message}
+                )
+
+            markdown_path = f"{md_dir}/plan.md"
+            md_lines = []
+            md_lines.append(f"# {plan.title}")
+            md_lines.append("")
+            md_lines.append(plan.description)
+            md_lines.append("")
+            md_lines.append(f"- Provider: **{provider.upper()}**")
+            md_lines.append(f"- Architecture: **{architecture_type}**")
+            md_lines.append(f"- Estimated users: **{estimated_users:,}**")
+            md_lines.append(f"- Estimated monthly cost: **${estimated_cost:.2f}**")
+            md_lines.append("")
+            md_lines.append("## Resources")
+            md_lines.append("")
+            md_lines.append("| Name | Type | Region | Est. Monthly Cost |")
+            md_lines.append("|------|------|--------|--------------------|")
+            for r in resources:
+                cost = f"${r.cost_estimate:.2f}" if r.cost_estimate is not None else "-"
+                md_lines.append(f"| {r.name} | {r.type} | {r.region} | {cost} |")
+            md_lines.append("")
+            md_lines.append("## Architecture Diagram")
+            md_lines.append("")
+            md_lines.append("```mermaid")
+            md_lines.append(mermaid)
+            md_lines.append("```")
+            md_content = "\n".join(md_lines)
+            md_data = io.BytesIO(md_content.encode())
+            write_result = await self.sandbox.file_upload(md_data, markdown_path)
+            if not write_result.success:
+                return ToolResult(
+                    success=False,
+                    message=f"Failed to write architecture markdown: {write_result.message}",
+                    data={"error": write_result.message}
+                )
+
             return ToolResult(
                 success=True,
                 message=f"Architecture plan created successfully for {estimated_users:,} users with estimated cost ${estimated_cost:.2f}/month",
-                data={"plan": plan.model_dump(), "mermaid": mermaid}
+                data={"plan": plan.model_dump(), "mermaid": mermaid, "markdown_file": markdown_path}
             )
             
         except Exception as e:

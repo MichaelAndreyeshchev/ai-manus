@@ -2,7 +2,7 @@ import logging
 from typing import AsyncGenerator, Optional
 from app.domain.services.flows.base import BaseFlow
 from app.domain.models.message import Message
-from app.domain.models.event import BaseEvent, DoneEvent, MessageEvent, TitleEvent
+from app.domain.models.event import BaseEvent, DoneEvent, MessageEvent, TitleEvent, PlanEvent, PlanStatus
 from app.domain.models.cloud_events import (
     CloudPipelineEvent, CloudPipelineStatus
 )
@@ -104,13 +104,16 @@ class CloudPipelineFlow(BaseFlow):
         logger.info("Cloud pipeline: planning")
         yield CloudPipelineEvent(pipeline_status=CloudPipelineStatus.PLANNING, current_stage="planning")
         last_plan = None
+        unified_plan = None
         last_mermaid = None
+        last_markdown = None
         async for event in self.planner.create_plan(message):
             # capture mermaid from planning tool output
             if getattr(event, 'type', '') == 'tool' and getattr(event, 'function_name', '') == 'create_architecture_plan' and getattr(event, 'status', None):
                 try:
                     if event.function_result and hasattr(event.function_result, 'data'):
                         last_mermaid = event.function_result.data.get('mermaid')
+                        last_markdown = event.function_result.data.get('markdown_file')
                 except Exception:
                     pass
             if hasattr(event, 'plan'):
@@ -118,8 +121,13 @@ class CloudPipelineFlow(BaseFlow):
                 try:
                     if last_mermaid:
                         event.plan.mermaid = last_mermaid
+                    if last_markdown:
+                        event.plan.architecture_plan = event.plan.architecture_plan or {}
+                        event.plan.architecture_plan["markdown_file"] = last_markdown
                 except Exception:
                     pass
+                unified_plan = event.plan
+                # also keep raw dict for tool injection
                 last_plan = event.plan.model_dump()
             yield event
 
@@ -129,6 +137,16 @@ class CloudPipelineFlow(BaseFlow):
             yield MessageEvent(message=ask)
             yield WaitEvent()
             return
+        # Ask user to review the architecture plan, cost, and mermaid before proceeding to IaC
+        review_msg = (
+            "Please review the architecture plan, estimated cost, and the mermaid diagram. "
+            "Reply 'approve' to proceed with IaC generation or 'revise' with your changes."
+        )
+        yield MessageEvent(message=review_msg)
+        from app.domain.models.event import WaitEvent
+        yield WaitEvent()
+        return
+
         self._stage = "coding"
 
         # Stage: IaC Generation (one execution step message-chained)
@@ -145,6 +163,15 @@ class CloudPipelineFlow(BaseFlow):
                         event.function_args = args
             # Pass-through; ExecutionAgent.execute yields Tool/Message events
             yield event
+        # After coding step, if unified_plan exists and IaC was generated, attach and emit PlanEvent update
+        try:
+            if unified_plan and last_plan:
+                # IaCExecutionAgent's tool events should have set iac_config via function_result; retrieve from session pipeline if available later
+                # Here we conservatively set from last_plan if coder wrote outputs to /home/ubuntu/iac
+                # unified_plan.iac_config remains optional; SessionRepository persistence handles full state
+                yield PlanEvent(status=PlanStatus.UPDATED, plan=unified_plan)
+        except Exception:
+            pass
 
         # Stage: Deployment (guarded by flag)
         from app.core.config import get_settings
@@ -155,6 +182,12 @@ class CloudPipelineFlow(BaseFlow):
             deploy_msg = Message(message="Plan and apply deployment using terraform in /home/ubuntu/iac. Respond in JSON format.")
             async for event in self.deployer.execute(deploy_msg.message, format="json_object"):
                 yield event
+            # Emit plan update so UI persists deployment context
+            try:
+                if unified_plan:
+                    yield PlanEvent(status=PlanStatus.UPDATED, plan=unified_plan)
+            except Exception:
+                pass
 
         # Stage: Monitoring
         logger.info("Cloud pipeline: monitoring")
@@ -162,6 +195,11 @@ class CloudPipelineFlow(BaseFlow):
         mon_msg = Message(message="Setup monitoring for deployed services and report health. Respond in JSON format.")
         async for event in self.monitor.execute(mon_msg.message, format="json_object"):
             yield event
+        try:
+            if unified_plan:
+                yield PlanEvent(status=PlanStatus.UPDATED, plan=unified_plan)
+        except Exception:
+            pass
 
         # Done
         yield CloudPipelineEvent(pipeline_status=CloudPipelineStatus.COMPLETED, current_stage="done")

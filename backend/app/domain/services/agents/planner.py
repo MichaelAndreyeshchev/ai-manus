@@ -55,6 +55,43 @@ class PlannerAgent(BaseAgent):
             tools=tools,
         )
 
+    async def create_plan(self, message: Message) -> AsyncGenerator[BaseEvent, None]:
+        """Create a plan based on the user's message using the generic planning prompt."""
+        msg = CREATE_PLAN_PROMPT.format(
+            message=message.message,
+            attachments="\n".join(message.attachments)
+        )
+        async for event in self.execute(msg):
+            if isinstance(event, MessageEvent):
+                logger.info(event.message)
+                parsed_response = await self.json_parser.parse(event.message)
+                plan = Plan.model_validate(parsed_response)
+                yield PlanEvent(status=PlanStatus.CREATED, plan=plan)
+            else:
+                yield event
+
+    async def update_plan(self, plan: Plan, step: Step) -> AsyncGenerator[BaseEvent, None]:
+        """Update the plan after executing a step using the generic update prompt."""
+        msg = UPDATE_PLAN_PROMPT.format(plan=plan.dump_json(), step=step.model_dump_json())
+        async for event in self.execute(msg):
+            if isinstance(event, MessageEvent):
+                logger.debug(f"Planner agent update plan: {event.message}")
+                parsed_response = await self.json_parser.parse(event.message)
+                updated_plan = Plan.model_validate(parsed_response)
+                new_steps = [Step.model_validate(step) for step in updated_plan.steps]
+                first_pending_index = None
+                for i, s in enumerate(plan.steps):
+                    if not s.is_done():
+                        first_pending_index = i
+                        break
+                if first_pending_index is not None:
+                    updated_steps = plan.steps[:first_pending_index]
+                    updated_steps.extend(new_steps)
+                    plan.steps = updated_steps
+                yield PlanEvent(status=PlanStatus.UPDATED, plan=plan)
+            else:
+                yield event
+
 
 class ArchitecturePlannerAgent(PlannerAgent):
     """

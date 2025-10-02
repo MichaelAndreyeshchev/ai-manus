@@ -51,4 +51,8 @@ export interface PlanEventData extends BaseEventData {
   title?: string;
   goal?: string;
   mermaid?: string;
+  architecture_plan?: Record<string, any> | null;
+  iac_config?: Record<string, any> | null;
+  deployment_record?: Record<string, any> | null;
+  monitoring_config?: Record<string, any> | null;
 }

@@ -148,6 +148,10 @@ class PlanEventData(BaseEventData):
     title: Optional[str] = None
     goal: Optional[str] = None
     mermaid: Optional[str] = None
+    architecture_plan: Optional[Dict[str, Any]] = None
+    iac_config: Optional[Dict[str, Any]] = None
+    deployment_record: Optional[Dict[str, Any]] = None
+    monitoring_config: Optional[Dict[str, Any]] = None
 
 class PlanSSEEvent(BaseSSEEvent):
     event: Literal["plan"] = "plan"
@@ -166,7 +170,11 @@ class PlanSSEEvent(BaseSSEEvent):
                 ) for step in event.plan.steps],
                 title=getattr(event.plan, 'title', None),
                 goal=getattr(event.plan, 'goal', None),
-                mermaid=getattr(event.plan, 'mermaid', None)
+                mermaid=getattr(event.plan, 'mermaid', None),
+                architecture_plan=getattr(event.plan, 'architecture_plan', None),
+                iac_config=getattr(event.plan, 'iac_config', None),
+                deployment_record=getattr(event.plan, 'deployment_record', None),
+                monitoring_config=getattr(event.plan, 'monitoring_config', None)
             )
         )
 
