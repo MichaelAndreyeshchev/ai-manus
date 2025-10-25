@@ -10,6 +10,7 @@ class ChatRequest(BaseModel):
     message: Optional[str] = None
     attachments: Optional[List[str]] = None
     event_id: Optional[str] = None
+    execution_mode: Optional[str] = "deep"  # "fast" or "deep"
 
 
 class ShellViewRequest(BaseModel):

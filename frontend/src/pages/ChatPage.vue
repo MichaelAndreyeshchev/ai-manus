@@ -280,11 +280,11 @@ const handleEvent = (event: AgentSSEEvent) => {
   lastEventId.value = event.data.event_id;
 }
 
-const handleSubmit = () => {
-  chat(inputMessage.value, attachments.value);
+const handleSubmit = (executionMode: string) => {
+  chat(inputMessage.value, attachments.value, executionMode);
 }
 
-const chat = async (message: string = '', files: FileInfo[] = []) => {
+const chat = async (message: string = '', files: FileInfo[] = [], executionMode: string = 'deep') => {
   if (!sessionId.value) return;
 
   // Cancel any existing chat connection before starting a new one
@@ -355,7 +355,8 @@ const chat = async (message: string = '', files: FileInfo[] = []) => {
             cancelCurrentChat.value = null;
           }
         }
-      }
+      },
+      executionMode
     );
   } catch (error) {
     console.error('Chat error:', error);

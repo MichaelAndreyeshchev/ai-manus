@@ -9,7 +9,7 @@
                     :rows="rows" :value="modelValue"
                     @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
                     @compositionstart="isComposing = true" @compositionend="isComposing = false"
-                    @keydown.enter.exact="handleEnterKeydown" :placeholder="t('Give Manus a task to work on...')"
+                    @keydown.enter.exact="handleEnterKeydown" :placeholder="t('Give LADS a task to work on...')"
                     :style="{ height: '46px' }"></textarea>
             </div>
             <footer class="flex flex-row justify-between w-full px-3">
@@ -19,6 +19,18 @@
                         aria-expanded="false" aria-haspopup="dialog">
                         <Paperclip :size="16" />
                     </button>
+                    <div class="flex gap-1 border border-[var(--border-main)] rounded-full p-1">
+                        <button @click="executionMode = 'fast'"
+                            :class="executionMode === 'fast' ? 'bg-[var(--Button-primary-black)] text-[var(--text-onblack)]' : 'text-[var(--text-secondary)]'"
+                            class="rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-[var(--fill-tsp-gray-main)]">
+                            Fast
+                        </button>
+                        <button @click="executionMode = 'deep'"
+                            :class="executionMode === 'deep' ? 'bg-[var(--Button-primary-black)] text-[var(--text-onblack)]' : 'text-[var(--text-secondary)]'"
+                            class="rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-[var(--fill-tsp-gray-main)]">
+                            Deep
+                        </button>
+                    </div>
                 </div>
                 <div class="flex gap-2">
                     <button v-if="!isRunning || sendEnabled"
@@ -50,6 +62,7 @@ const { t } = useI18n();
 const hasTextInput = ref(false);
 const isComposing = ref(false);
 const chatBoxFileListRef = ref();
+const executionMode = ref('deep');
 
 const props = defineProps<{
     modelValue: string;
@@ -64,7 +77,7 @@ const sendEnabled = computed(() => {
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
-    (e: 'submit'): void;
+    (e: 'submit', executionMode: string): void;
     (e: 'stop'): void;
 }>();
 
@@ -83,7 +96,7 @@ const handleEnterKeydown = (event: KeyboardEvent) => {
 
 const handleSubmit = () => {
     if (!sendEnabled.value) return;
-    emit('submit');
+    emit('submit', executionMode.value);
 };
 
 const handleStop = () => {

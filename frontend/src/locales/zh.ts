@@ -23,11 +23,11 @@ export default {
   'Thursday': '周四',
   'Friday': '周五',
   'Saturday': '周六',
-  'Manus Computer': 'Manus 的电脑',
-  'Manus is using': 'Manus 正在使用',
+  'Manus Computer': 'LADS 的电脑',
+  'Manus is using': 'LADS 正在使用',
   'Jump to live': '跳到实时',
   'Failed to load file content': '加载文件内容失败',
-  'Give Manus a task to work on...': '给 Manus 一个任务...',
+  'Give LADS a task to work on...': '给 LADS 一个任务...',
   // Shell tools
   'Executing command': '正在执行命令',
   'Viewing command output': '正在查看命令输出',
@@ -189,4 +189,4 @@ export default {
   // Reset Password Form
   'Sending Code...': '发送验证码中...',
   'Send Verification Code': '发送验证码',
-} 
+}    

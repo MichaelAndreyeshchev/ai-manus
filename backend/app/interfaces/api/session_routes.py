@@ -139,7 +139,8 @@ async def chat(
             message=request.message,
             timestamp=datetime.fromtimestamp(request.timestamp) if request.timestamp else None,
             event_id=request.event_id,
-            attachments=request.attachments
+            attachments=request.attachments,
+            execution_mode=request.execution_mode
         ):
             logger.debug(f"Received event from chat: {event}")
             sse_event = EventMapper.event_to_sse_event(event)

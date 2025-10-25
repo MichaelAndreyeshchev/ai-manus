@@ -23,11 +23,11 @@ export default {
   'Thursday': 'Thu',
   'Friday': 'Fri',
   'Saturday': 'Sat',
-  'Manus Computer': 'Manus Computer',
-  'Manus is using': 'Manus is using',
+  'Manus Computer': 'LADS Computer',
+  'Manus is using': 'LADS is using',
   'Jump to live': 'Jump to live',
   'Failed to load file content': 'Failed to load file content',
-  'Give Manus a task to work on...': 'Give Manus a task to work on...',
+  'Give LADS a task to work on...': 'Give LADS a task to work on...',
   // Shell tools
   'Executing command': 'Executing command',
   'Viewing command output': 'Viewing command output',
@@ -189,4 +189,4 @@ export default {
   // Reset Password Form
   'Sending Code...': 'Sending Code...',
   'Send Verification Code': 'Send Verification Code',
-} 
+}    

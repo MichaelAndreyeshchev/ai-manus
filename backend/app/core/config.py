@@ -13,9 +13,13 @@ class Settings(BaseSettings):
     temperature: float = 0.7
     max_tokens: int = 2000
     
+    # N8n workflow configuration
+    n8n_webhook_url: str = "https://stonegolem.app.n8n.cloud/webhook-test/a33ee13a-729c-4b41-ad41-a49943fca079"
+    llm_provider: str = "n8n"  # "openai" or "n8n"
+    
     # MongoDB configuration
     mongodb_uri: str = "mongodb://mongodb:27017"
-    mongodb_database: str = "manus"
+    mongodb_database: str = "lads"
     mongodb_username: str | None = None
     mongodb_password: str | None = None
     
@@ -74,12 +78,14 @@ class Settings(BaseSettings):
         
     def validate(self):
         """Validate configuration settings"""
-        if not self.api_key:
-            raise ValueError("API key is required")
+        if self.llm_provider == "openai" and not self.api_key:
+            raise ValueError("API key is required for OpenAI provider")
+        if self.llm_provider == "n8n" and not self.n8n_webhook_url:
+            raise ValueError("N8n webhook URL is required for n8n provider")
 
 @lru_cache()
 def get_settings() -> Settings:
     """Get application settings"""
     settings = Settings()
     settings.validate()
-    return settings 
+    return settings      

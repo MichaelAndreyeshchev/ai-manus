@@ -120,7 +120,8 @@ class AgentDomainService:
         message: Optional[str] = None,
         timestamp: Optional[datetime] = None,
         latest_event_id: Optional[str] = None,
-        attachments: Optional[List[str]] = None
+        attachments: Optional[List[str]] = None,
+        execution_mode: str = "deep"
     ) -> AsyncGenerator[BaseEvent, None]:
         """
         Chat with an agent
@@ -131,6 +132,42 @@ class AgentDomainService:
             if not session:
                 logger.error(f"Attempted to chat with non-existent Session {session_id} for user {user_id}")
                 raise RuntimeError("Session not found")
+
+            if execution_mode == "fast" and message:
+                logger.info(f"Using fast mode for session {session_id}")
+                await self._session_repository.update_latest_message(session_id, message, timestamp or datetime.now())
+                
+                message_event = MessageEvent(
+                    message=message, 
+                    role="user", 
+                    attachments=[FileInfo(file_id=attachment) for attachment in attachments] if attachments else []
+                )
+                await self._session_repository.add_event(session_id, message_event)
+                yield message_event
+                
+                try:
+                    response = await self._llm.ask([{"role": "user", "content": message}])
+                    response_content = response.get("content", "")
+                    
+                    assistant_event = MessageEvent(
+                        message=response_content,
+                        role="assistant"
+                    )
+                    await self._session_repository.add_event(session_id, assistant_event)
+                    yield assistant_event
+                    
+                    done_event = DoneEvent()
+                    await self._session_repository.add_event(session_id, done_event)
+                    yield done_event
+                    
+                    logger.info(f"Fast mode completed for session {session_id}")
+                    return
+                except Exception as e:
+                    logger.error(f"Error in fast mode for session {session_id}: {str(e)}")
+                    error_event = ErrorEvent(error=str(e))
+                    await self._session_repository.add_event(session_id, error_event)
+                    yield error_event
+                    return
 
             task = await self._get_task(session)
 
