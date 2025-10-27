@@ -3,6 +3,7 @@ import logging
 import time
 from datetime import datetime
 from app.domain.models.session import Session, SessionStatus
+from app.core.config import get_settings
 from app.domain.external.llm import LLM
 from app.domain.external.sandbox import Sandbox
 from app.domain.external.search import SearchEngine
@@ -57,18 +58,22 @@ class AgentDomainService:
 
     async def _create_task(self, session: Session) -> Task:
         """Create a new agent task"""
+        settings = get_settings()
         sandbox = None
         sandbox_id = session.sandbox_id
-        if sandbox_id:
-            sandbox = await self._sandbox_cls.get(sandbox_id)
-        if not sandbox:
-            sandbox = await self._sandbox_cls.create()
-            session.sandbox_id = sandbox.id
-            await self._session_repository.save(session)
-        browser = await sandbox.get_browser()
-        if not browser:
-            logger.error(f"Failed to get browser for Sandbox {sandbox_id}")
-            raise RuntimeError(f"Failed to get browser for Sandbox {sandbox_id}")
+        # If sandbox is disabled, skip creating or using it
+        browser = None
+        if settings.sandbox_enabled:
+            if sandbox_id:
+                sandbox = await self._sandbox_cls.get(sandbox_id)
+            if not sandbox:
+                sandbox = await self._sandbox_cls.create()
+                session.sandbox_id = sandbox.id
+                await self._session_repository.save(session)
+            browser = await sandbox.get_browser()
+            if not browser:
+                logger.error(f"Failed to get browser for Sandbox {sandbox_id}")
+                raise RuntimeError(f"Failed to get browser for Sandbox {sandbox_id}")
         
         await self._session_repository.save(session)
 

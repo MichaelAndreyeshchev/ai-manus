@@ -16,12 +16,11 @@ from app.application.services.email_service import EmailService
 from app.infrastructure.external.cache import get_cache
 
 # Import all required dependencies for agent service
-from app.infrastructure.external.llm.openai_llm import OpenAILLM
 from app.infrastructure.external.llm.n8n_llm import N8nLLM
 from app.infrastructure.external.sandbox.docker_sandbox import DockerSandbox
 from app.core.config import get_settings
 from app.infrastructure.external.task.redis_task import RedisStreamTask
-from app.infrastructure.utils.llm_json_parser import LLMJsonParser
+from app.infrastructure.utils.simple_json_parser import SimpleJsonParser
 from app.infrastructure.repositories.mongo_agent_repository import MongoAgentRepository
 from app.infrastructure.repositories.mongo_session_repository import MongoSessionRepository
 from app.infrastructure.repositories.file_mcp_repository import FileMCPRepository
@@ -43,15 +42,14 @@ def get_agent_service() -> AgentService:
     
     # Create all dependencies
     settings = get_settings()
-    if settings.llm_provider == "n8n":
-        llm = N8nLLM()
-    else:
-        llm = OpenAILLM()
+    llm = N8nLLM() if settings.llm_provider == "n8n" else N8nLLM()
     agent_repository = MongoAgentRepository()
     session_repository = MongoSessionRepository()
+    # Respect sandbox toggle; when disabled we still pass the class but domain service will skip
     sandbox_cls = DockerSandbox
     task_cls = RedisStreamTask
-    json_parser = LLMJsonParser()
+    # Always use a simple JSON parser (no LLM dependency)
+    json_parser = SimpleJsonParser()
     file_storage = get_file_storage()
     search_engine = get_search_engine()
     mcp_repository = FileMCPRepository()

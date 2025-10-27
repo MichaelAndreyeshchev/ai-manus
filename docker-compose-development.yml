@@ -24,7 +24,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: ["./dev.sh"]  # Start in reload mode
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--timeout-graceful-shutdown", "0"]  # Start in reload mode
     volumes:
       - ./backend:/app  # Mount source code directory
       #- ./mcp.json:/etc/mcp.json # Mount MCP servers directory
@@ -50,6 +50,9 @@ services:
       - .env
     environment:
       - SANDBOX_ADDRESS=sandbox # Use single container as sandbox
+      # Allow overriding n8n webhooks without code edits
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-https://stonegolem.app.n8n.cloud/webhook-test/a33ee13a-729c-4b41-ad41-a49943fca079}
+      - N8N_FALLBACK_WEBHOOK_URL=${N8N_FALLBACK_WEBHOOK_URL:-http://mockserver:8090/webhook-test/local}
 
   sandbox:
     build:
@@ -77,6 +80,7 @@ services:
     build:
       context: ./mockserver
       dockerfile: Dockerfile
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8090", "--reload"]
     volumes:
       - ./mockserver:/app  # Mount source code directory
       - /app/__pycache__  # Avoid overwriting cache files

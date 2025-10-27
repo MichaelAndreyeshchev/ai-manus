@@ -27,7 +27,7 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Code executed on startup
-    logger.info("Application startup - Manus AI Agent initializing")
+    logger.info("Application startup - LADS AI Agent initializing")
     
     # Initialize MongoDB and Beanie
     await get_mongodb().initialize()
@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         # Code executed on shutdown
-        logger.info("Application shutdown - Manus AI Agent terminating")
+        logger.info("Application shutdown - LADS AI Agent terminating")
         # Disconnect from MongoDB
         await get_mongodb().shutdown()
         # Disconnect from Redis
@@ -62,7 +62,7 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"Error during AgentService cleanup: {str(e)}")
 
-app = FastAPI(title="Manus AI Agent", lifespan=lifespan)
+app = FastAPI(title="LADS AI Agent", lifespan=lifespan)
 
 # Configure CORS
 app.add_middleware(

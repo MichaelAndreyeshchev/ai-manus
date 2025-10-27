@@ -458,7 +458,23 @@ class DockerSandbox(Sandbox):
             # Return the first IPv4 address found
             if addr_info and len(addr_info) > 0:
                 return addr_info[0][4][0]  # Return sockaddr[0] from (family, type, proto, canonname, sockaddr), which is the IP address
-            return None
+            # DNS failed, try resolving via Docker (compose service)
+            try:
+                docker_client = docker.from_env()
+                # Prefer containers whose compose service name matches hostname
+                candidates = docker_client.containers.list()
+                for c in candidates:
+                    labels = c.labels or {}
+                    service = labels.get('com.docker.compose.service')
+                    if service == hostname or c.name.startswith(hostname):
+                        try:
+                            c.reload()
+                            return DockerSandbox._get_container_ip(c)
+                        except Exception:
+                            continue
+                return None
+            except Exception:
+                return None
         except Exception as e:
             # Log error and return None on failure
             logger.error(f"Failed to resolve hostname {hostname}: {str(e)}")
@@ -535,9 +551,16 @@ class DockerSandbox(Sandbox):
         settings = get_settings()
 
         if settings.sandbox_address:
-            # Chrome CDP needs IP address
-            ip = await cls._resolve_hostname_to_ip(settings.sandbox_address)
-            return DockerSandbox(ip=ip)
+            addr = settings.sandbox_address.strip() if isinstance(settings.sandbox_address, str) else settings.sandbox_address
+            if addr and str(addr).lower() not in {"none", "null", "undefined"}:
+                # Chrome CDP prefers IP, but fall back to hostname if DNS lookup fails
+                resolved_ip = await cls._resolve_hostname_to_ip(addr)
+                ip_or_hostname = resolved_ip or addr
+                return DockerSandbox(ip=ip_or_hostname)
+            # If address is an invalid sentinel like 'none', try default service name
+            try_default = await cls._resolve_hostname_to_ip("sandbox")
+            if try_default:
+                return DockerSandbox(ip=try_default)
     
         return await asyncio.to_thread(DockerSandbox._create_task)
     
@@ -554,8 +577,14 @@ class DockerSandbox(Sandbox):
         """
         settings = get_settings()
         if settings.sandbox_address:
-            ip = await cls._resolve_hostname_to_ip(settings.sandbox_address)
-            return DockerSandbox(ip=ip, container_name=id)
+            addr = settings.sandbox_address.strip() if isinstance(settings.sandbox_address, str) else settings.sandbox_address
+            if addr and str(addr).lower() not in {"none", "null", "undefined"}:
+                resolved_ip = await cls._resolve_hostname_to_ip(addr)
+                ip_or_hostname = resolved_ip or addr
+                return DockerSandbox(ip=ip_or_hostname, container_name=id)
+            try_default = await cls._resolve_hostname_to_ip("sandbox")
+            if try_default:
+                return DockerSandbox(ip=try_default, container_name=id)
 
         docker_client = docker.from_env()
         container = docker_client.containers.get(id)

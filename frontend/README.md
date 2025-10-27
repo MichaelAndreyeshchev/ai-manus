@@ -1,4 +1,4 @@
-# AI Manus Frontend
+# LADS Frontend
 
 English | [中文](README_zh.md)
 

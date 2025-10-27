@@ -99,8 +99,8 @@ export default {
   'Audio': 'Audio',
   'Archive': 'Archive',
   // Login/Register Page
-  'Login to Manus': 'Login to Manus',
-  'Register to Manus': 'Register to Manus',
+  'Login to Manus': 'Login to LADS',
+  'Register to Manus': 'Register to LADS',
   'Full Name': 'Full Name',
   'Email': 'Email',
   'Password': 'Password',
@@ -114,7 +114,7 @@ export default {
   'Already have an account?': 'Already have an account?',
   'Don\'t have an account?': 'Don\'t have an account?',
   'Login successful! Welcome back': 'Login successful! Welcome back',
-  'Registration successful! Welcome to Manus': 'Registration successful! Welcome to Manus',
+  'Registration successful! Welcome to Manus': 'Registration successful! Welcome to LADS',
   'Authentication failed, please try again': 'Authentication failed, please try again',
   'Passwords do not match': 'Passwords do not match',
   // Validation error messages

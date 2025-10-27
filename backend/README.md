@@ -1,8 +1,8 @@
-# AI Manus Backend Service
+# LADS Backend Service
 
 English | [中文](README_zh.md)
 
-AI Manus is an intelligent conversation agent system based on FastAPI and OpenAI API. The backend adopts Domain-Driven Design (DDD) architecture, supporting intelligent dialogue, file operations, Shell command execution, and browser automation.
+LADS is an intelligent conversation agent system based on FastAPI and OpenAI API. The backend adopts Domain-Driven Design (DDD) architecture, supporting intelligent dialogue, file operations, Shell command execution, and browser automation.
 
 ## Project Architecture
 
@@ -107,10 +107,10 @@ The service will start at http://localhost:8000.
 ### Docker Deployment
 ```bash
 # Build Docker image
-docker build -t manus-ai-agent .
+docker build -t lads-ai-agent .
 
 # Run container
-docker run -p 8000:8000 --env-file .env -v /var/run/docker.sock:/var/run/docker.sock manus-ai-agent
+docker run -p 8000:8000 --env-file .env -v /var/run/docker.sock:/var/run/docker.sock lads-ai-agent
 ```
 
 > Note: If using Docker deployment, you need to mount the Docker socket so the backend can create sandbox containers.

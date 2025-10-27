@@ -87,3 +87,23 @@ async def chat_completions(request: ChatCompletionRequest):
     current_index = (current_index + 1) % len(mock_data)
     logger.info(f"Returning mock response {current_index}/{len(mock_data)}")
     return response
+
+
+# Simple mock for n8n webhook format: accept arbitrary JSON and echo a text output
+@app.post("/webhook-test/{token}")
+async def webhook_test(token: str, payload: Dict[str, Any]):
+    logger.info(f"Received webhook-test call for token={token}")
+    # Respond with an array of objects containing `output` to match n8n_llm parsing
+    user_input = payload.get("input") or ""
+    history = payload.get("history") or []
+    output = f"Echo (test): {user_input}\nHistory messages: {len(history)}"
+    return [{"output": output}]
+
+
+@app.post("/webhook/{token}")
+async def webhook_prod(token: str, payload: Dict[str, Any]):
+    logger.info(f"Received webhook call for token={token}")
+    user_input = payload.get("input") or ""
+    history = payload.get("history") or []
+    output = f"Echo: {user_input}\nHistory messages: {len(history)}"
+    return [{"output": output}]

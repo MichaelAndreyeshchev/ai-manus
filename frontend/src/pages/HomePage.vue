@@ -12,33 +12,13 @@
               </div>
             </div>
             <div class="flex">
-              <Bot :size="30" />
-              <ManusLogoTextIcon />
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <a href="https://github.com/simpleyyt/ai-manus" 
-               target="_blank"
-               class="items-center justify-center whitespace-nowrap font-medium transition-colors hover:opacity-90 active:opacity-80 px-[12px] gap-[6px] text-sm min-w-16 outline outline-1 -outline-offset-1 hover:bg-[var(--fill-tsp-white-light)] text-[var(--text-primary)] outline-[var(--border-btn-main)] bg-transparent clickable hidden sm:flex rounded-[100px] relative h-[32px] group"
-               title="Visit GitHub Repository">
-              <Github class="size-[18px]" />
-              GitHub
-            </a>
-            <div class="relative flex items-center" aria-expanded="false" aria-haspopup="dialog"
-              @mouseenter="handleUserMenuEnter" @mouseleave="handleUserMenuLeave">
-              <div class="relative flex items-center justify-center font-bold cursor-pointer flex-shrink-0">
-                <div
-                  class="relative flex items-center justify-center font-bold flex-shrink-0 rounded-full overflow-hidden"
-                  style="width: 32px; height: 32px; font-size: 16px; color: rgba(255, 255, 255, 0.9); background-color: rgb(59, 130, 246);">
-                  {{ avatarLetter }}</div>
-              </div>
-              <!-- User Menu -->
-              <div v-if="showUserMenu" @mouseenter="handleUserMenuEnter" @mouseleave="handleUserMenuLeave"
-                class="absolute top-full right-0 mt-1 mr-[-15px] z-50">
-                <UserMenu />
+              <div class="flex">
+                <img src="/lads-logo.png" alt="LADS" width="30" height="30" />
+                <ManusLogoTextIcon />
               </div>
             </div>
           </div>
+          <!-- right header content removed per request -->
         </div>
         <div class="h-8"></div>
       </div>
@@ -75,13 +55,13 @@ import { useI18n } from 'vue-i18n';
 import ChatBox from '../components/ChatBox.vue';
 import { createSession } from '../api/agent';
 import { showErrorToast } from '../utils/toast';
-import { Bot, PanelLeft, Github } from 'lucide-vue-next';
+import { PanelLeft } from 'lucide-vue-next';
 import ManusLogoTextIcon from '../components/icons/ManusLogoTextIcon.vue';
 import type { FileInfo } from '../api/file';
 import { useLeftPanel } from '../composables/useLeftPanel';
 import { useFilePanel } from '../composables/useFilePanel';
 import { useAuth } from '../composables/useAuth';
-import UserMenu from '../components/UserMenu.vue';
+// UserMenu removed with header cleanup
 
 const { t } = useI18n();
 const router = useRouter();
@@ -93,29 +73,7 @@ const { hideFilePanel } = useFilePanel();
 const { currentUser } = useAuth();
 
 // Get first letter of user's fullname for avatar display
-const avatarLetter = computed(() => {
-  return currentUser.value?.fullname?.charAt(0)?.toUpperCase() || 'M';
-});
-
-// User menu state
-const showUserMenu = ref(false);
-const userMenuTimeout = ref<NodeJS.Timeout | null>(null);
-
-// Show user menu on hover
-const handleUserMenuEnter = () => {
-  if (userMenuTimeout.value) {
-    clearTimeout(userMenuTimeout.value);
-    userMenuTimeout.value = null;
-  }
-  showUserMenu.value = true;
-};
-
-// Hide user menu with delay
-const handleUserMenuLeave = () => {
-  userMenuTimeout.value = setTimeout(() => {
-    showUserMenu.value = false;
-  }, 200); // 200ms delay to allow moving to menu
-};
+// Avatar and user menu removed with header cleanup
 
 onMounted(() => {
   hideFilePanel();

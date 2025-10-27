@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -15,6 +16,8 @@ class Settings(BaseSettings):
     
     # N8n workflow configuration
     n8n_webhook_url: str = "https://stonegolem.app.n8n.cloud/webhook-test/a33ee13a-729c-4b41-ad41-a49943fca079"
+    # Optional fallback URL used when primary webhook returns 404/410
+    n8n_fallback_webhook_url: Optional[str] = None
     llm_provider: str = "n8n"  # "openai" or "n8n"
     
     # MongoDB configuration
@@ -30,6 +33,7 @@ class Settings(BaseSettings):
     redis_password: str | None = None
     
     # Sandbox configuration
+    sandbox_enabled: bool = True
     sandbox_address: str | None = None
     sandbox_image: str | None = None
     sandbox_name_prefix: str | None = None

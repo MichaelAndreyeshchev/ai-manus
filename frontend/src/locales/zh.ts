@@ -99,8 +99,8 @@ export default {
   'Audio': '音频',
   'Archive': '压缩包',
   // Login/Register Page
-  'Login to Manus': '登录 Manus',
-  'Register to Manus': '注册 Manus',
+  'Login to Manus': '登录 LADS',
+  'Register to Manus': '注册 LADS',
   'Full Name': '姓名',
   'Email': '邮箱',
   'Password': '密码',
@@ -114,7 +114,7 @@ export default {
   'Already have an account?': '已有账户？',
   'Don\'t have an account?': '没有账户？',
   'Login successful! Welcome back': '登录成功！欢迎回来',
-  'Registration successful! Welcome to Manus': '注册成功！欢迎使用 Manus',
+  'Registration successful! Welcome to Manus': '注册成功！欢迎使用 LADS',
   'Authentication failed, please try again': '认证失败，请重试',
   'Passwords do not match': '两次密码输入不一致',
   // Validation error messages

@@ -5,7 +5,7 @@ from enum import Enum
 import logging
 
 from app.domain.utils.json_parser import JsonParser
-from app.infrastructure.external.llm.openai_llm import OpenAILLM
+from app.core.config import get_settings
 
 
 logger = logging.getLogger(__name__)
@@ -27,14 +27,22 @@ class LLMJsonParser(JsonParser):
     """
     
     def __init__(self):
-        self.llm = OpenAILLM()
+        # Only use LLM-based repair when provider is OpenAI
+        settings = get_settings()
+        self.llm = None
+        if settings.llm_provider == "openai":
+            # Lazy import to avoid importing OpenAI stack when not needed
+            from app.infrastructure.external.llm.openai_llm import OpenAILLM  # type: ignore
+            self.llm = OpenAILLM()
+
         self.strategies = [
             self._try_direct_parse,
             self._try_markdown_block_parse,
             #self._try_regex_extract,
             self._try_cleanup_and_parse,
-            self._try_llm_extract_and_fix,
         ]
+        if self.llm is not None:
+            self.strategies.append(self._try_llm_extract_and_fix)
     
     async def parse(self, text: str, default_value: Optional[Any] = None) -> Union[Dict, List, Any]:
         """
@@ -148,6 +156,8 @@ class LLMJsonParser(JsonParser):
     async def _try_llm_extract_and_fix(self, text: str) -> Optional[Any]:
         """Use LLM to extract and fix JSON from the text"""
         try:
+            if self.llm is None:
+                return None
             # Run async LLM call in event loop
             result = await self._llm_extract_and_fix_async(text)
             return result
@@ -179,6 +189,7 @@ JSON:"""
         ]
         
         try:
+            # self.llm is guaranteed non-None here
             response = await self.llm.ask(
                 messages=messages,
                 response_format={"type": "json_object"}

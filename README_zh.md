@@ -1,4 +1,4 @@
-# AI Manus
+# LADS
 
 [English](README.md) | 中文 | [官方网站](https://app.ai-manus.com) | [文档](https://docs.ai-manus.com)
 
@@ -6,13 +6,13 @@
 &ensp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-AI Manus 是一个通用的 AI Agent 系统，支持在沙盒环境中运行各种工具和操作。
+LADS 是一个通用的 AI Agent 系统，支持在沙盒环境中运行各种工具和操作。
 
-用 AI Manus 开启你的智能体之旅吧！
+用 LADS 开启你的智能体之旅吧！
 
 👏 欢迎加入 [QQ群(1005477581)](https://qun.qq.com/universal-share/share?ac=1&authKey=p4X3Da5iMpR4liAenxwvhs7IValPKiCFtUevRlJouz9qSTSZsMnPJc3hzsJjgQYv&busi_data=eyJncm91cENvZGUiOiIxMDA1NDc3NTgxIiwidG9rZW4iOiJNZmUrTmQ0UzNDZDNqNDFVdjVPS1VCRkJGRWVlV0R3RFJSRVFoZDAwRjFDeUdUM0t6aUIyczlVdzRjV1BYN09IIiwidWluIjoiMzQyMjExODE1In0%3D&data=C3B-E6BlEbailV32co77iXL5vxPIhtD9y_itWLSq50hKqosO_55_isOZym2Faaq4hs9-517tUY8GSWaDwPom-A&svctype=4&tempid=h5_group_info)
 
-❤️ 喜欢 AI Manus? 点亮小星星 🌟 或 [赞助开发者](docs/sponsor.md)! ❤️
+❤️ 喜欢 LADS? 点亮小星星 🌟 或 [赞助开发者](docs/sponsor.md)! ❤️
 
 🚀 [Demo 演示](https://app.ai-manus.com)
 
@@ -44,12 +44,6 @@ https://github.com/user-attachments/assets/5cb2240b-0984-4db0-8818-a24f81624b04
  * 对话：支持停止与打断，支持文件上传与下载。
  * 多语言：支持中文与英文。
  * 认证：用户登录与认证。
-
-## 开发计划
-
- * 工具：支持 Deploy & Expose。
- * 沙盒：支持手机与 Windows 电脑接入。
- * 部署：支持 K8s 和 Dock Swarm 多集群部署。
 
 ## 环境要求
 
@@ -225,7 +219,7 @@ docker compose up -d
 
 > 注意：如果提示`sandbox-1 exited with code 0`，这是正常的，这是为了让 sandbox 镜像成功拉取到本地。
 
-打开浏览器访问<http://localhost:5173>即可访问 Manus。
+打开浏览器访问<http://localhost:5173>即可访问 LADS。
 
 ## 开发指南
 
@@ -233,9 +227,9 @@ docker compose up -d
 
 本项目由三个独立的子项目组成：
 
-* `frontend`: manus 前端
-* `backend`: Manus 后端
-* `sandbox`: Manus 沙盒
+* `frontend`: LADS 前端
+* `backend`: LADS 后端
+* `sandbox`: LADS 沙盒
 
 ### 整体设计
 
@@ -248,13 +242,6 @@ docker compose up -d
 3. Web 往会话 ID 中发送用户消息，Server 收到用户消息后，将消息发送给 PlanAct Agent 处理。
 4. PlanAct Agent 处理过程中会调用相关工具完成任务。
 5. Agent 处理过程中产生的所有事件通过 SSE 发回 Web。
-
-**当用户浏览工具时：**
-
-- 浏览器：
-    1. Sandbox 的无头浏览器通过 xvfb 与 x11vnc 启动了 vnc 服务，并且通过 websockify 将 vnc 转化成 websocket。
-    2. Web 的 NoVNC 组件通过 Server 的 Websocket Forward 转发到 Sandbox，实现浏览器查看。
-- 其它工具：其它工具原理也是差不多。
 
 ### 环境准备
 

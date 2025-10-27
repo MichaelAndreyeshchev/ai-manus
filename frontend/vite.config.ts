@@ -15,7 +15,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    exclude: ['lucide-vue-next'],
+    include: ['lucide-vue-next'],
   },
   server: {
     host: true,

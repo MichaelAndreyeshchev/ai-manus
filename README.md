@@ -237,7 +237,7 @@ docker compose up -d
 
 > Note: If you see `sandbox-1 exited with code 0`, this is normal, as it ensures the sandbox image is successfully pulled locally.
 
-Open your browser and visit <http://localhost:5173> to access Manus.
+Open your browser and visit <http://localhost:5173> to access LADS.
 
 ## Development Guide
 
@@ -245,9 +245,9 @@ Open your browser and visit <http://localhost:5173> to access Manus.
 
 This project consists of three independent sub-projects:
 
-* `frontend`: manus frontend
-* `backend`: Manus backend
-* `sandbox`: Manus sandbox
+* `frontend`: LADS frontend
+* `backend`: LADS backend
+* `sandbox`: LADS sandbox
 
 ### Environment Setup
 

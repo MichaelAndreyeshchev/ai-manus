@@ -2,7 +2,6 @@ from typing import Dict, Any, Optional, List
 from playwright.async_api import async_playwright, Browser, Page
 import asyncio
 from markdownify import markdownify
-from app.infrastructure.external.llm.openai_llm import OpenAILLM
 from app.core.config import get_settings
 from app.domain.models.tool_result import ToolResult
 import logging
@@ -17,7 +16,6 @@ class PlaywrightBrowser:
         self.browser: Optional[Browser] = None
         self.page: Optional[Page] = None
         self.playwright = None
-        self.llm = OpenAILLM()
         self.settings = get_settings()
         self.cdp_url = cdp_url
         
@@ -215,18 +213,9 @@ class PlaywrightBrowser:
         # Convert to Markdown
         markdown_content = markdownify(visible_content)
 
+        # Return raw markdown content directly without LLM processing
         max_content_length = min(50000, len(markdown_content))
-        response = await self.llm.ask([{
-            "role": "system",
-            "content": "You are a professional web page information extraction assistant. Please extract all information from the current page content and convert it to Markdown format."
-        },
-        {
-            "role": "user",
-            "content": markdown_content[:max_content_length]
-        }
-        ])
-        
-        return response.get("content", "")
+        return markdown_content[:max_content_length]
     
     async def view_page(self) -> ToolResult:
         """View visible elements within the current page's viewport and convert to Markdown format"""

@@ -12,8 +12,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 # Install uv
 RUN pip install uv
 
-# Configure uv to use Aliyun mirror
-ENV UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
+# Use default PyPI index (avoid unreliable mirrors)
+ENV UV_INDEX_URL=
 
 # Install dependencies
 COPY requirements.txt .
